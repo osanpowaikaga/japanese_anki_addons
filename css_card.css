@@ -1,0 +1,173 @@
+body {
+	font-family: 'Noto Sans JP', 'Meiryo', 'Yu Gothic', 'sans-serif';
+	background: #18191a;
+	color: #dadada;
+	font-size: 20px;
+	margin: 0;
+	padding: 0;
+}
+
+.card {
+	padding: 10px;
+}
+
+/* Text elements */
+.jp-word {
+	font-size: 2.5em;
+	font-weight: bold;
+	color: #e6e6fa;
+	margin-bottom: 2px;
+}
+
+.jp-reading {
+	font-size: 1.3em;
+	color: #bcd;
+	margin-bottom: 10px;
+}
+
+.jp-header {
+	font-size: 1.1em;
+	font-weight: bold;
+	color: #fcfcfc;
+	margin-bottom: 6px;
+	margin-left: 2px;
+}
+
+/* Common card styles */
+.jp-meanings,
+.jp-examples,
+.jp-pitch,
+.jp-kanji-info {
+	background: #18191a;
+	border-radius: 6px;
+	padding: 14px 16px;
+	border: 1px solid #444;
+	color: #dadada;
+	box-shadow: none;
+	height: 240px;
+	overflow-y: auto;
+	flex-grow: 1;
+}
+
+.jp-examples,
+.jp-kanji-info {
+  overflow-y: auto;
+  max-height: 240px;
+  /* Hide scrollbars for all browsers */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+.jp-examples::-webkit-scrollbar, .jp-kanji-info::-webkit-scrollbar {
+  display: none;
+}
+
+/* Layout elements */
+.jp-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 13px;
+	margin-bottom: 16px;
+}
+
+.jp-block {
+	width: 50%;
+	display: flex;
+	flex-direction: column;
+}
+
+.jp-meanings-block,
+.jp-examples-block,
+.jp-pitch-block,
+.jp-kanji-info-block {
+	min-width: 0;
+}
+
+.jp-meanings,
+.jp-examples,
+.jp-kanji-info {
+	font-size: 16px;
+	flex-grow: 1;
+}
+
+.jp-pitch {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	flex-grow: 1;
+}
+
+/* Content blocks */
+.meaning-block,
+.jp-en-pair {
+	background: transparent;
+	color: inherit;
+	border-radius: 0;
+	margin-bottom: 14px;
+	padding: 0;
+	box-shadow: none;
+}
+
+.pitch-accent-block {
+	background: transparent;
+	border-radius: 0;
+	padding: 0;
+	display: inline-block;
+	box-shadow: none;
+}
+
+.pitch {
+	font-weight: bold;
+	color: #bcd;
+}
+
+.pitch svg {
+	background: #20242b !important;
+	border-radius: 4px;
+}
+
+/* Kanji section */
+.kanji-block {
+	margin: 12px 0 0 0;
+	padding: 10px 12px;
+	background: #222226;
+	border-radius: 6px;
+	border: 1px solid #333;
+	display: inline-block;
+	min-width: 220px;
+	vertical-align: top;
+}
+
+.kanji-char {
+	font-size: 2em;
+	font-weight: bold;
+	color: #f7d774;
+	margin-bottom: 6px;
+}
+
+.kanji-attr {
+	font-size: 1em;
+	margin-bottom: 2px;
+	color: #bcd;
+}
+
+.kanji-block img {
+	width: 150px;
+	height: auto;
+	display: block;
+	margin-top: 4px;
+}
+
+/* Example pairs */
+.jp-en-pair {
+	margin-bottom: 20px;
+}
+
+.japanese {
+	display: block;
+	font-size: 18px;
+	margin-bottom: 4px;
+}
+
+.english {
+	display: block;
+}
