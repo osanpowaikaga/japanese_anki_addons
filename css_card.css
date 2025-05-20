@@ -73,10 +73,16 @@ body {
 }
 
 .jp-pitch {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex-grow: 1;
   overflow-y: auto;
   max-height: 240px;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE 10+ */
+  overscroll-behavior: contain;
 }
 .jp-pitch::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
@@ -112,9 +118,15 @@ body {
 
 .jp-pitch {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
+	flex-wrap: wrap;
 	gap: 10px;
 	flex-grow: 1;
+	overflow-y: auto;
+	max-height: 240px;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE 10+ */
+	overscroll-behavior: contain;
 }
 
 /* Content blocks */
