@@ -17,16 +17,18 @@ body {
 	font-weight: bold;
 	color: #e6e6fa;
 	margin-bottom: 2px;
+	text-align: center;
 }
 
 .jp-reading {
 	font-size: 1.3em;
 	color: #bcd;
 	margin-bottom: 10px;
+	text-align: center;
 }
 
 .jp-header {
-	font-size: 1.1em;
+	font-size: 0.9em;
 	font-weight: bold;
 	color: #fcfcfc;
 	margin-bottom: 6px;
@@ -47,6 +49,7 @@ body {
 	height: 240px;
 	overflow-y: auto;
 	flex-grow: 1;
+	overscroll-behavior: contain;
 }
 
 .jp-examples,
@@ -59,6 +62,24 @@ body {
 }
 .jp-examples::-webkit-scrollbar, .jp-kanji-info::-webkit-scrollbar {
   display: none;
+}
+
+.jp-meanings {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.jp-meanings::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.jp-pitch {
+  overflow-y: auto;
+  max-height: 240px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.jp-pitch::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* Layout elements */
