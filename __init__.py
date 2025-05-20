@@ -316,33 +316,23 @@ def create_japanese_word_card(word, deck_id=None, preview_only=False):
     # Pitch accent SVG: use each unique (kana, pattern) pair
     pitch_html = ''
     if jmdict_entries or pitch_patterns:
-        # Collect all unique (kana, pattern) pairs from pitch accent entries
+        # Use only the fast SQLite-based pitch accent lookup (already cached)
+        # Get all pitch accent entries for the word
         unique_pitch = set()
-        # Use lookup_pitch_accent to get all entries for the word
-        # (We already have entries in the cache if called before)
-        # Re-do the lookup to get all entries, not just the first
         entries = []
+        # Use the same logic as lookup_pitch_accent, but get all entries
+        ensure_pitchdb_sqlite()
         try:
-            if os.path.exists(PITCH_DB_PATH):
-                with open(PITCH_DB_PATH, 'r', encoding='utf-8') as f:
-                    next(f, None)
-                    for line in f:
-                        parts = line.strip().split('␞')
-                        if len(parts) < 5:
-                            continue
-                        kanji_column = parts[0]
-                        kana_column = parts[1]
-                        accented_kana = parts[2]
-                        pitch_number = parts[3]
-                        pitch_pattern = parts[4]
-                        kanji_list = [re.sub(r'[△×…]', '', k) for k in kanji_column.split('␟') if k]
-                        kana_list = [re.sub(r'[△×…]', '', k) for k in kana_column.split('␟') if k]
-                        if word in kanji_list or word in kana_list:
-                            kana = kana_list[0] if kana_list else ''
-                            pattern = pitch_pattern
-                            if (kana, pattern) not in unique_pitch:
-                                unique_pitch.add((kana, pattern))
-                                entries.append({'kana': kana, 'pattern': pattern})
+            if os.path.exists(PITCH_DB_SQLITE_PATH):
+                conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
+                c = conn.cursor()
+                c.execute('SELECT kana, pattern FROM pitch_accents WHERE kanji=? OR kana=?', (word, word))
+                for row in c.fetchall():
+                    kana, pattern = row
+                    if (kana, pattern) not in unique_pitch:
+                        unique_pitch.add((kana, pattern))
+                        entries.append({'kana': kana, 'pattern': pattern})
+                conn.close()
         except Exception:
             pass
         for entry in entries:
@@ -579,7 +569,7 @@ card_css = load_file_text(CSS_PATH)
 if __name__ == "__main__":
     import time
     timings = {}
-    test_word = '精液'
+    test_word = '可愛い'
 
     start = time.perf_counter()
     pitch_result = lookup_pitch_accent(test_word)
