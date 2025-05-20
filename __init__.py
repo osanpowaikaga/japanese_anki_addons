@@ -28,38 +28,69 @@ try:
 except Exception:
     KANJI_INFO_DB = []
 
-# --- On-demand Pitch Accent Lookup (no global index) ---
-_pitch_accent_cache = {}
+# --- Pitch Accent SQLite Database Path ---
+PITCH_DB_SQLITE_PATH = os.path.join(ADDON_DIR, 'wadoku_pitchdb.sqlite')
 
-def lookup_pitch_accent(word):
-    """On-demand lookup of pitch accent for a word from wadoku_pitchdb.csv, with in-memory cache."""
-    if word in _pitch_accent_cache:
-        return _pitch_accent_cache[word]
+# --- Convert CSV to SQLite if needed ---
+def ensure_pitchdb_sqlite():
+    if os.path.exists(PITCH_DB_SQLITE_PATH):
+        return
     if not os.path.exists(PITCH_DB_PATH):
-        return '', '', [], ''
-    entries = []
+        return
+    import sqlite3
     try:
+        conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS pitch_accents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            kanji TEXT,
+            kana TEXT,
+            accented_kana TEXT,
+            pitch_number TEXT,
+            pattern TEXT
+        )''')
+        c.execute('CREATE INDEX IF NOT EXISTS idx_pitch_kanji ON pitch_accents(kanji)')
+        c.execute('CREATE INDEX IF NOT EXISTS idx_pitch_kana ON pitch_accents(kana)')
         with open(PITCH_DB_PATH, 'r', encoding='utf-8') as f:
             next(f, None)
             for line in f:
                 parts = line.strip().split('␞')
                 if len(parts) < 5:
                     continue
-                kanji_column = parts[0]
-                kana_column = parts[1]
-                accented_kana = parts[2]
-                pitch_number = parts[3]
-                pitch_pattern = parts[4]
-                kanji_list = [re.sub(r'[△×…]', '', k) for k in kanji_column.split('␟') if k]
-                kana_list = [re.sub(r'[△×…]', '', k) for k in kana_column.split('␟') if k]
-                if word in kanji_list or word in kana_list:
-                    pitch_entry = {
-                        "kana": kana_list[0] if kana_list else '',
-                        "accented_kana": accented_kana,
-                        "pitch_number": pitch_number,
-                        "pattern": pitch_pattern
-                    }
-                    entries.append(pitch_entry)
+                c.execute('INSERT INTO pitch_accents (kanji, kana, accented_kana, pitch_number, pattern) VALUES (?, ?, ?, ?, ?)',
+                          (parts[0], parts[1], parts[2], parts[3], parts[4]))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        pass
+
+# --- On-demand Pitch Accent Lookup (no global index) ---
+_pitch_accent_cache = {}
+
+def lookup_pitch_accent(word):
+    """Lookup pitch accent for a word from wadoku_pitchdb.sqlite, with in-memory cache."""
+    if word in _pitch_accent_cache:
+        return _pitch_accent_cache[word]
+    ensure_pitchdb_sqlite()
+    if not os.path.exists(PITCH_DB_SQLITE_PATH):
+        return '', '', [], ''
+    import sqlite3
+    entries = []
+    try:
+        conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
+        c = conn.cursor()
+        # Search both kanji and kana columns
+        c.execute('SELECT kana, accented_kana, pitch_number, pattern FROM pitch_accents WHERE kanji=? OR kana=?', (word, word))
+        for row in c.fetchall():
+            kana, accented_kana, pitch_number, pattern = row
+            pitch_entry = {
+                "kana": kana,
+                "accented_kana": accented_kana,
+                "pitch_number": pitch_number,
+                "pattern": pattern
+            }
+            entries.append(pitch_entry)
+        conn.close()
     except Exception:
         pass
     if not entries:
@@ -544,7 +575,33 @@ front_template = load_file_text(FRONT_TEMPLATE_PATH)
 back_template = load_file_text(BACK_TEMPLATE_PATH)
 card_css = load_file_text(CSS_PATH)
 
+# --- Runtime Diagnostics: Measure timings for major functions ---
 if __name__ == "__main__":
-    # Test case: pitch accent lookup for 小説
-    result = lookup_pitch_accent('小説')
-    print('Pitch accent lookup for 小説:', result)
+    import time
+    timings = {}
+    test_word = '精液'
+
+    start = time.perf_counter()
+    pitch_result = lookup_pitch_accent(test_word)
+    timings['Pitch Accent Lookup'] = time.perf_counter() - start
+
+    start = time.perf_counter()
+    jmdict_result = lookup_jmdict(test_word)
+    timings['JMdict Lookup'] = time.perf_counter() - start
+
+    start = time.perf_counter()
+    kanji_result = get_kanji_info_blocks(test_word)
+    timings['Kanji Info Lookup'] = time.perf_counter() - start
+
+    start = time.perf_counter()
+    example_result = get_example_sentences(test_word)
+    timings['Example Sentences Lookup'] = time.perf_counter() - start
+
+    start = time.perf_counter()
+    card_html = create_japanese_word_card(test_word, preview_only=True)
+    timings['Card Render'] = time.perf_counter() - start
+
+    print("\n--- Japanese Word Creator: Runtime Diagnostics ---")
+    for k, v in timings.items():
+        print(f"{k:28}: {v*1000:.2f} ms")
+    print("--- End Diagnostics ---\n")
