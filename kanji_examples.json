@@ -2145,5 +2145,35 @@
         "The greatest hate springs from the greatest love."
       ]
     ]
+  },
+  "演説": {
+    "examples": [
+      [
+        "彼は原稿を見ながら演説した",
+        "He spoke from notes."
+      ],
+      [
+        "彼女は演説がうまい［まずい］",
+        "She is a good [poor] speaker."
+      ],
+      [
+        "演説口調で話す",
+        "speak in 「a declamatory [an oratorical] tone"
+      ]
+    ],
+    "related_words": [
+      [
+        "演説家",
+        "a (public) speaker"
+      ],
+      [
+        "演説会",
+        "a speech (meeting)"
+      ],
+      [
+        "演説会場",
+        "a meeting hall"
+      ]
+    ]
   }
 }

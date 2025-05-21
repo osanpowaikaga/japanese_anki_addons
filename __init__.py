@@ -38,6 +38,7 @@ def ensure_pitchdb_sqlite():
     if not os.path.exists(PITCH_DB_PATH):
         return
     import sqlite3
+    import re
     try:
         conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
         c = conn.cursor()
@@ -57,8 +58,18 @@ def ensure_pitchdb_sqlite():
                 parts = line.strip().split('␞')
                 if len(parts) < 5:
                     continue
-                c.execute('INSERT INTO pitch_accents (kanji, kana, accented_kana, pitch_number, pattern) VALUES (?, ?, ?, ?, ?)',
-                          (parts[0], parts[1], parts[2], parts[3], parts[4]))
+                kanji_column = parts[0]
+                kana_column = parts[1]
+                accented_kana = parts[2]
+                pitch_number = parts[3]
+                pitch_pattern = parts[4]
+                # Split by ␟ and remove special chars
+                kanji_list = [re.sub(r'[△×…]', '', k) for k in kanji_column.split('␟') if k]
+                kana_list = [re.sub(r'[△×…]', '', k) for k in kana_column.split('␟') if k]
+                for kanji in kanji_list or ['']:
+                    for kana in kana_list or ['']:
+                        c.execute('INSERT INTO pitch_accents (kanji, kana, accented_kana, pitch_number, pattern) VALUES (?, ?, ?, ?, ?)',
+                                  (kanji, kana, accented_kana, pitch_number, pitch_pattern))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -79,8 +90,12 @@ def lookup_pitch_accent(word):
     try:
         conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
         c = conn.cursor()
-        # Search both kanji and kana columns
-        c.execute('SELECT kana, accented_kana, pitch_number, pattern FROM pitch_accents WHERE kanji=? OR kana=?', (word, word))
+        # If input is a single kanji, fetch all readings for that kanji
+        if len(word) == 1 and '\u4e00' <= word <= '\u9fff':
+            c.execute('SELECT kana, accented_kana, pitch_number, pattern FROM pitch_accents WHERE kanji=?', (word,))
+        else:
+            # Otherwise, search both kanji and kana columns as before
+            c.execute('SELECT kana, accented_kana, pitch_number, pattern FROM pitch_accents WHERE kanji=? OR kana=?', (word, word))
         for row in c.fetchall():
             kana, accented_kana, pitch_number, pattern = row
             pitch_entry = {
@@ -595,3 +610,30 @@ if __name__ == "__main__":
     for k, v in timings.items():
         print(f"{k:28}: {v*1000:.2f} ms")
     print("--- End Diagnostics ---\n")
+
+# --- Test case for pitch accent lookup for 生 ---
+def _test_lookup_pitch_accent_for_kanji():
+    print("\n--- Pitch Accent Lookup Test for '生' ---")
+    results = []
+    ensure_pitchdb_sqlite()
+    import sqlite3
+    if not os.path.exists(PITCH_DB_SQLITE_PATH):
+        print("Pitch DB not found.")
+        return
+    conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
+    c = conn.cursor()
+    c.execute('SELECT kana, accented_kana, pitch_number, pattern FROM pitch_accents WHERE kanji=?', ('生',))
+    for row in c.fetchall():
+        kana, accented_kana, pitch_number, pattern = row
+        results.append((kana, accented_kana, pitch_number, pattern))
+    conn.close()
+    if not results:
+        print("No results found for '生'.")
+    else:
+        for r in results:
+            print(f"kana: {r[0]}, accented_kana: {r[1]}, pitch_number: {r[2]}, pattern: {r[3]}")
+    print("--- End Test ---\n")
+
+if __name__ == "__main__":
+    # ...existing code...
+    _test_lookup_pitch_accent_for_kanji()
