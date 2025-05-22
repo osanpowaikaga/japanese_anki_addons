@@ -84,7 +84,7 @@ def lookup_pitch_accent(word):
         return _pitch_accent_cache[word]
     ensure_pitchdb_sqlite()
     if not os.path.exists(PITCH_DB_SQLITE_PATH):
-        return '', '', [], ''
+        return [], '', [], ''
     import sqlite3
     entries = []
     try:
@@ -109,13 +109,13 @@ def lookup_pitch_accent(word):
     except Exception:
         pass
     if not entries:
-        result = ('', '', [], '')
+        result = ([], '', [], '')
     else:
-        reading = entries[0]["accented_kana"]
-        accented_kana = entries[0]["accented_kana"]
+        # Collect all unique accented_kanas readings
+        accented_kanas = list({e["accented_kana"] for e in entries if e["accented_kana"]})
         pitch_patterns = [e["pattern"] for e in entries]
-        normal_kana = entries[0]["kana"]
-        result = (reading, accented_kana, pitch_patterns, normal_kana)
+        normal_kanas = list({e["kana"] for e in entries if e["kana"]})
+        result = (accented_kanas, accented_kanas[0] if accented_kanas else '', pitch_patterns, normal_kanas[0] if normal_kanas else '')
     _pitch_accent_cache[word] = result
     return result
 
@@ -300,7 +300,9 @@ class JapaneseWordCardCreator(QDialog):
 # --- Modified card creation logic to support deck and preview ---
 def create_japanese_word_card(word, deck_id=None, preview_only=False):
     # Reading: try to get from wadoku_pitchdb accented kana (column 3)
-    reading, accented_kana, pitch_patterns, normal_kana = lookup_pitch_accent(word)
+    readings, accented_kana, pitch_patterns, normal_kana = lookup_pitch_accent(word)
+    # Join all readings for display
+    reading = '、'.join(readings) if readings else ''
     # Fallback: try to get from JMdict entry (kana)
     jmdict_entries = lookup_jmdict(word)
     if not reading and jmdict_entries:
