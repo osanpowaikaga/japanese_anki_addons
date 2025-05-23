@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit
 import re
 import unicodedata
 import sqlite3
+from kanji_lookup import KanjiLookupDialog
 
 # Add-on paths
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
