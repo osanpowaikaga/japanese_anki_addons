@@ -2,7 +2,7 @@ from aqt.qt import *
 from aqt import mw
 from aqt.utils import showInfo
 from anki.notes import Note
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QProgressBar
 
 class PitchAccentDeckFieldSelector(QDialog):
     def __init__(self, parent=None):
@@ -27,6 +27,13 @@ class PitchAccentDeckFieldSelector(QDialog):
         layout.addWidget(QLabel("Select Field 2:"))
         self.field2_combo = QComboBox()
         layout.addWidget(self.field2_combo)
+
+        # Progress bar
+        self.progress = QProgressBar()
+        self.progress.setMinimum(0)
+        self.progress.setMaximum(100)
+        self.progress.setValue(0)
+        layout.addWidget(self.progress)
 
         # Update fields when deck changes
         self.deck_combo.currentIndexChanged.connect(self.update_fields)
@@ -56,6 +63,65 @@ class PitchAccentDeckFieldSelector(QDialog):
         self.field2_combo.clear()
         self.field1_combo.addItems(fields)
         self.field2_combo.addItems(fields)
+
+    def accept(self):
+        # On OK, process all notes in the selected deck
+        deck_name = self.deck_combo.currentText()
+        deck_id = self.deck_map.get(deck_name)
+        field1 = self.field1_combo.currentText()
+        field2 = self.field2_combo.currentText()
+        if not (deck_id and field1 and field2):
+            showInfo("Please select a deck and two fields.")
+            return
+        # Get all note ids in the selected deck
+        nids = mw.col.db.list("select nid from cards where did=?", deck_id)
+        total = len(set(nids))
+        updated = 0
+        import sys
+        addon_init = sys.modules.get('japanese_word_creator')
+        if not addon_init or not hasattr(addon_init, "lookup_pitch_accent"):
+            showInfo("Could not import pitch accent functions from __init__.py. Aborting.")
+            return
+        for i, nid in enumerate(set(nids)):
+            note = mw.col.getNote(nid)
+            if field1 in note and field2 in note:
+                input_value = note[field1]
+                # --- Use the same logic as in __init__.py: fetch all (kana, pattern) pairs from DB ---
+                pitch_html = ''
+                unique_pitch = set()
+                entries = []
+                # Use the same DB path as in __init__.py
+                PITCH_DB_SQLITE_PATH = addon_init.PITCH_DB_SQLITE_PATH
+                addon_init.ensure_pitchdb_sqlite()
+                import sqlite3, os
+                try:
+                    if os.path.exists(PITCH_DB_SQLITE_PATH):
+                        conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
+                        c = conn.cursor()
+                        c.execute('SELECT kana, pattern FROM pitch_accents WHERE kanji=? OR kana=?', (input_value, input_value))
+                        for row in c.fetchall():
+                            kana, pattern = row
+                            if (kana, pattern) not in unique_pitch:
+                                unique_pitch.add((kana, pattern))
+                                entries.append({'kana': kana, 'pattern': pattern})
+                        conn.close()
+                except Exception:
+                    pass
+                for entry in entries:
+                    formatted_pattern = addon_init.format_pitch_pattern(entry['pattern'])
+                    svg = addon_init.create_html_pitch_pattern(entry['kana'], formatted_pattern)
+                    pitch_html += f'<div class="pitch-accent-block">{svg}</div>'
+                note[field2] = pitch_html
+                note.flush()
+                updated += 1
+            # Update progress bar
+            if total > 0:
+                percent = int((i + 1) / total * 100)
+                self.progress.setValue(percent)
+                QApplication.processEvents()
+        mw.col.reset()
+        showInfo(f"Updated {updated} notes in deck '{deck_name}'.")
+        super().accept()
 
 # Add menu entry to Tools menu
 _menu_entry_added_pitch = False
