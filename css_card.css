@@ -17,18 +17,18 @@ body {
 	font-weight: bold;
 	color: #e6e6fa;
 	margin-bottom: 2px;
-	text-align: center;
+	text-align: left;
 }
 
 .jp-reading {
 	font-size: 1.3em;
 	color: #bcd;
 	margin-bottom: 10px;
-	text-align: center;
+	text-align: left;
 }
 
 .jp-header {
-	font-size: 0.9em;
+	font-size: 0.8em;
 	font-weight: bold;
 	color: #fcfcfc;
 	margin-bottom: 6px;
