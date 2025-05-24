@@ -91,13 +91,14 @@ body {
 /* Layout elements */
 .jp-row {
 	display: flex;
-	justify-content: space-between;
-	gap: 13px;
+	flex-direction: row;
+	width: 100%;
+	gap: 0;
 	margin-bottom: 16px;
 }
 
 .jp-block {
-	width: 50%;
+	width: 100%;
 	display: flex;
 	flex-direction: column;
 }
@@ -107,6 +108,7 @@ body {
 .jp-pitch-block,
 .jp-kanji-info-block {
 	min-width: 0;
+	width: 100%;
 }
 
 .jp-meanings,
@@ -203,4 +205,15 @@ body {
 
 .english {
 	display: block;
+}
+
+/* Section heights for each block */
+.jp-pitch {
+  height: 100px;
+  max-height: 100px;
+}
+
+
+.jp-meanings-block {
+  margin-right: 16px;
 }
