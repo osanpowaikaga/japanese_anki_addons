@@ -12,6 +12,8 @@ import json
 import sqlite3
 import re
 from aqt import gui_hooks, mw
+from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
+from .pitch_svg import pattern_to_mora_pitch, text, circle, path
 
 # --- Helper: JMdict XML lookup ---
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -277,19 +279,22 @@ class PitchAccentSvgWidget(QWidget):
         self.bg_color = QColor("#151618")
         self.border_color = QColor("#333")
         self.padding = 14  # px, match QTextEdit padding
-        self.gap = 2  # px, gap between SVGs (reduced from 8)
-        self.row_gap = 4  # px, gap between rows
+        self.gap = 8  # px, gap between SVGs (reduced from 8)
+        self.row_gap = 8  # px, gap between rows
         self.scroll_offset = 0  # vertical scroll offset in px
         self._update_svgs()
 
     def _update_svgs(self):
         self.svg_renderers = []
         self.sizes = []
+        # Always use the shared SVG logic and pattern formatting
+        from .__init__ import format_pitch_pattern
         for p in self.pitch_entries:
             kana = p.get('kana')
             pattern = p.get('pattern')
             if kana and pattern:
-                svg = create_svg_pitch_pattern(kana, pattern)
+                formatted_pattern = format_pitch_pattern(pattern)
+                svg = create_svg_pitch_pattern(kana, formatted_pattern)
                 renderer = QSvgRenderer(bytearray(svg, encoding='utf-8'))
                 self.svg_renderers.append(renderer)
                 size = renderer.defaultSize()
@@ -663,9 +668,11 @@ body {{ background: #151618; color: #dadada; margin: 0; }}
                     renderer = QSvgRenderer(bytearray(svg, encoding='utf-8'))
                     size = renderer.defaultSize() * 2
                     image = QImage(size, QImage.Format.Format_ARGB32)
-                    image.fill(Qt.GlobalColor.transparent)
+                    # Fill with SVG background color instead of transparent
+                    image.fill(QColor("#20242b"))
                     painter = QPainter(image)
-                    renderer.render(painter)
+                    # Ensure SVG fills the entire QImage so background is visible
+                    renderer.render(painter, QRectF(0, 0, size.width(), size.height()))
                     painter.end()
                     fmt = QTextCharFormat()
                     fmt.setObjectType(9)
@@ -807,102 +814,6 @@ def on_main_menu_add():
     mw.form.menuTools.addAction(action)
     _menu_entry_added = True
 
-def hira_to_mora(hira):
-    combiners = ['ゃ', 'ゅ', 'ょ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'ャ', 'ュ', 'ョ', 'ァ', 'ィ', 'ゥ', 'エ', 'ォ']
-    mora_arr = []
-    i = 0
-    while i < len(hira):
-        if i+1 < len(hira) and hira[i+1] in combiners:
-            mora_arr.append(hira[i] + hira[i+1])
-            i += 2
-        else:
-            mora_arr.append(hira[i])
-            i += 1
-    return mora_arr
-
-def create_svg_pitch_pattern(word, patt):
-    # Single background rect with padding, all pitch elements spaced with step_width
-    padding = 12  # px, space between SVG edge and background rect
-    margin_lr = 16  # px, space between background rect and content (left/right)
-    step_width = 35  # spacing for pitch elements (no gap)
-    pattern_gap = 8  # px, gap to the right of each SVG for pattern separation
-    vertical_gap = 12  # px, transparent gap below the background rect (for vertical separation)
-    mora = hira_to_mora(word)
-    if len(patt) < len(mora) + 1:
-        last_char = patt[-1]
-        patt = patt + (last_char * (len(mora) + 1 - len(patt)))
-    elif len(patt) > len(mora) + 1:
-        patt = patt[:len(mora) + 1]
-    positions = max(len(mora), len(patt))
-    content_width = ((positions-1) * step_width) + (margin_lr*2)
-    content_height = 65
-    svg_width = content_width + padding*2 + pattern_gap  # Add gap to the right
-    svg_height = content_height + padding*2 + vertical_gap  # Add transparent gap to the bottom
-    # Draw SVG, background rect only covers content area (not the gap)
-    svg = ('<svg class="pitch" width="{0}px" height="{1}px" viewBox="0 0 {0} {1}">').format(svg_width * 1.025, svg_height * 1.125)
-    # Background rect: only covers content, not the transparent gap
-    svg += '<rect x="0" y="0" width="{}" height="{}" rx="8" fill="#20242b"/>'.format(content_width + padding*2, content_height + padding*3)
-    # Add mora characters (no gap between them)
-    chars = ''
-    for pos, mor in enumerate(mora):
-        x_center = padding + margin_lr + pos * step_width
-        chars += '<text x="{}" y="{}" style="font-size:20px;font-family:sans-serif;fill:#fff;">{}</text>'.format(x_center-6, svg_height-vertical_gap-7.5, mor)
-    # Add circles and connecting paths (no gap between them)
-    circles = ''
-    paths = ''
-    prev_center = (None, None)
-    for pos, accent in enumerate(patt):
-        x_center = padding + margin_lr + pos * step_width
-        y_center = padding + (5 if accent in ['H', 'h', '1', '2'] else 30)
-        circles += '<circle r="5" cx="{}" cy="{}" style="fill:{};stroke:#000;stroke-width:1.5;" />'.format(x_center, y_center, '#fff' if pos >= len(mora) else '#000')
-        if pos > 0:
-            if prev_center[1] == y_center:
-                path_typ = 's'
-            elif prev_center[1] < y_center:
-                path_typ = 'd'
-            elif prev_center[1] > y_center:
-                path_typ = 'u'
-            dx = x_center - prev_center[0]
-            if path_typ == 's':
-                delta = '{},0'.format(dx)
-            elif path_typ == 'u':
-                delta = '{},-25'.format(dx)
-            elif path_typ == 'd':
-                delta = '{},25'.format(dx)
-            paths += '<path d="m {},{} {}" style="fill:none;stroke:#00f;stroke-width:1.5;" />'.format(prev_center[0], prev_center[1], delta)
-        prev_center = (x_center, y_center)
-    svg += chars + paths + circles + '</svg>'
-    return svg
-
-# --- Kanji Info Lookup ---
-def get_kanji_info_blocks(word):
-    # Returns kanji info blocks for each kanji in the word, if present in KANJI_INFO_DB
-    if not KANJI_INFO_DB:
-        return []
-    blocks = []
-    for char in word:
-        for entry in KANJI_INFO_DB:
-            if entry.get('kanji') == char:
-                blocks.append(entry)
-                break
-    return blocks
-
-# --- Example Sentences Lookup ---
-def get_example_sentences(word):
-    # Try to load from kanji_examples.json
-    json_path = os.path.join(ADDON_DIR, 'kanji_examples.json')
-    if not os.path.exists(json_path):
-        return []
-    try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        entry = data.get(word)
-        if entry:
-            return entry.get('examples', [])
-    except Exception:
-        pass
-    return []
-
 # --- Accented Kana Normalization and Frequency Lookup ---
 def accented_kana_to_katakana(accented_kana):
     # Remove pitch accent marks (e.g., '＼', '／', etc.) and convert to katakana
@@ -938,3 +849,64 @@ def get_reading_frequencies(word):
     except Exception:
         pass
     return freq_map
+
+def create_svg_pitch_pattern(word, patt):
+    # If multiple patterns are present, use only the first
+    if ',' in str(patt):
+        patt = str(patt).split(',')[0].strip()
+    mora = hira_to_mora(word)
+    pitch_groups = pattern_to_mora_pitch(patt, mora)
+    if not pitch_groups or len(pitch_groups) != len(mora) + 1:
+        # fallback to old logic
+        if len(patt) < len(mora) + 1:
+            last_char = patt[-1]
+            patt = patt + (last_char * (len(mora) + 1 - len(patt)))
+        elif len(patt) > len(mora) + 1:
+            patt = patt[:len(mora) + 1]
+        pitch_groups = list(patt)
+    positions = len(pitch_groups)
+    step_width = 35
+    margin_lr = 16
+    padding = 12  # px, space between SVG edge and background rect
+    pattern_gap = 2  # px, right padding
+    vertical_gap = 2  # px, bottom badding
+    content_width = max(0, ((positions-1) * step_width) + (margin_lr*2))
+    content_height = 65
+    svg_width = content_width + padding*2 + pattern_gap
+    svg_height = content_height + padding*2 + vertical_gap
+    # Add a background rect to ensure background is always visible, with padding
+    svg = ('<svg class="pitch" width="{0}px" height="{1}px" viewBox="0 0 {0} {1}">'.format(svg_width, svg_height))
+    svg += '<rect x="0" y="0" width="{0}" height="{1}" rx="8" fill="#20242b"/>'.format(svg_width, svg_height)
+    # Add mora characters
+    chars = ''
+    for pos, mor in enumerate(mora):
+        x_center = padding + margin_lr + (pos * step_width)
+        chars += text(x_center-11, mor)
+    # Add circles and connecting paths
+    circles = ''
+    paths = ''
+    prev_center = (None, None)
+    for pos, accent in enumerate(pitch_groups):
+        x_center = padding + margin_lr + (pos * step_width)
+        a = accent[0] if accent else 'L'
+        if a in ['H', 'h', '1', '2']:
+            y_center = padding + 5
+        elif a in ['L', 'l', '0']:
+            y_center = padding + 30
+        else:
+            y_center = padding + 30
+        circles += circle(x_center, y_center, pos >= len(mora))
+        if pos > 0:
+            if prev_center[1] == y_center:
+                path_typ = 's'
+            elif prev_center[1] < y_center:
+                path_typ = 'd'
+            elif prev_center[1] > y_center:
+                path_typ = 'u'
+            paths += path(prev_center[0], prev_center[1], path_typ, step_width)
+        prev_center = (x_center, y_center)
+    svg += chars
+    svg += paths
+    svg += circles
+    svg += '</svg>'
+    return svg

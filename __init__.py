@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit
 import re
 import unicodedata
 import sqlite3
-from kanji_lookup import KanjiLookupDialog
+from .kanji_lookup import KanjiLookupDialog
 from . import update_pitch_accents
 from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
 # Add-on paths

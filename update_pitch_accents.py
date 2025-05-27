@@ -3,6 +3,7 @@ from aqt import mw
 from aqt.utils import showInfo
 from anki.notes import Note
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QProgressBar
+from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
 
 class PitchAccentDeckFieldSelector(QDialog):
     def __init__(self, parent=None):
@@ -109,7 +110,7 @@ class PitchAccentDeckFieldSelector(QDialog):
                     pass
                 for entry in entries:
                     formatted_pattern = addon_init.format_pitch_pattern(entry['pattern'])
-                    svg = addon_init.create_html_pitch_pattern(entry['kana'], formatted_pattern)
+                    svg = create_html_pitch_pattern(entry['kana'], formatted_pattern)
                     pitch_html += f'<div class="pitch-accent-block">{svg}</div>'
                 note[field2] = pitch_html
                 note.flush()

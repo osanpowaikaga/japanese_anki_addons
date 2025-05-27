@@ -70,6 +70,9 @@ def path(x, y, typ, step_width):
     ).format(x, y, delta)
 
 def create_svg_pitch_pattern(word, patt):
+    # If multiple patterns are present, use only the first
+    if ',' in str(patt):
+        patt = str(patt).split(',')[0].strip()
     mora = hira_to_mora(word)
     pitch_groups = pattern_to_mora_pitch(patt, mora)
     if not pitch_groups or len(pitch_groups) != len(mora) + 1:
