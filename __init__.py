@@ -15,9 +15,8 @@ import re
 import unicodedata
 import sqlite3
 from kanji_lookup import KanjiLookupDialog
-import update_pitch_accents
-from pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
-
+from . import update_pitch_accents
+from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
 # Add-on paths
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
 JM_DICT_PATH = os.path.join(ADDON_DIR, 'JMdict_e_examp.XML')
@@ -336,14 +335,12 @@ def create_japanese_word_card(word, deck_id=None, preview_only=False):
     # Pitch accent SVG: use each unique (kana, pattern) pair
     pitch_html = ''
     if jmdict_entries or pitch_patterns:
-        # Use only the fast SQLite-based pitch accent lookup (already cached)
-        # Get all pitch accent entries for the word
         unique_pitch = set()
         entries = []
-        # Use the same logic as lookup_pitch_accent, but get all entries
         ensure_pitchdb_sqlite()
         try:
             if os.path.exists(PITCH_DB_SQLITE_PATH):
+                import sqlite3
                 conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
                 c = conn.cursor()
                 c.execute('SELECT kana, pattern FROM pitch_accents WHERE kanji=? OR kana=?', (word, word))
@@ -357,6 +354,7 @@ def create_japanese_word_card(word, deck_id=None, preview_only=False):
             pass
         for entry in entries:
             formatted_pattern = format_pitch_pattern(entry['pattern'])
+            # Use shared SVG logic from pitch_svg.py
             svg = create_html_pitch_pattern(entry['kana'], formatted_pattern)
             pitch_html += f'<div class="pitch-accent-block">{svg}</div>'
     # Kanji info
@@ -428,110 +426,7 @@ def format_pitch_pattern(pattern):
     return result if result else pattern
 
 # --- Pitch Accent SVG Generation ---
-def hira_to_mora(hira):
-    mora_arr = []
-    combiners = ['ゃ', 'ゅ', 'ょ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ',
-                 'ャ', 'ュ', 'ョ', 'ァ', 'ィ', 'ゥ', 'ェ', 'ォ']
-    i = 0
-    while i < len(hira):
-        if i+1 < len(hira) and hira[i+1] in combiners:
-            mora_arr.append(hira[i] + hira[i+1])
-            i += 2
-        else:
-            mora_arr.append(hira[i])
-            i += 1
-    return mora_arr
-
-def circle(x, y, o=False):
-    if o:
-        return (
-            '<circle r="5" cx="{}" cy="{}" style="fill:#fff;stroke:#000;stroke-width:1.5;" />'
-        ).format(x, y)
-    else:
-        return (
-            '<circle r="5" cx="{}" cy="{}" style="fill:#000;" />'
-        ).format(x, y)
-
-def text(x, mora):
-    if len(mora) == 1:
-        return ('<text x="{}" y="67.5" style="font-size:20px;font-family:sans-'
-                'serif;fill:#fff;">{}</text>').format(x, mora)
-    else:
-        return ('<text x="{}" y="67.5" style="font-size:20px;font-family:sans-'
-                'serif;fill:#fff;">{}</text><text x="{}" y="67.5" style="font-'
-                'size:14px;font-family:sans-serif;fill:#fff;">{}</text>'
-                ).format(x-5, mora[0], x+12, mora[1])
-
-def path(x, y, typ, step_width):
-    if typ == 's':  # straight
-        delta = '{},0'.format(step_width)
-    elif typ == 'u':  # up
-        delta = '{},-25'.format(step_width)
-    elif typ == 'd':  # down
-        delta = '{},25'.format(step_width)
-    return (
-        '<path d="m {},{} {}" style="fill:none;stroke:#00f;stroke-width:1.5;" />'
-    ).format(x, y, delta)
-
-def create_svg_pitch_pattern(word, patt):
-    """Draw pitch accent patterns in SVG.
-    Examples:
-        はし HLL (箸)
-        はし LHL (橋)
-        はし LHH (端)
-    """
-    mora = hira_to_mora(word)
-    # Ensure pattern length matches mora + 1
-    if len(patt) < len(mora) + 1:
-        # Extend pattern if needed
-        last_char = patt[-1]
-        patt = patt + (last_char * (len(mora) + 1 - len(patt)))
-    elif len(patt) > len(mora) + 1:
-        # Truncate pattern if needed
-        patt = patt[:len(mora) + 1]
-    positions = max(len(mora), len(patt))
-    step_width = 35
-    margin_lr = 16
-    svg_width = max(0, ((positions-1) * step_width) + (margin_lr*2))
-    svg = ('<svg class="pitch" width="{0}px" height="75px" viewBox="0 0 {0} 75" '
-           'style="background-color:#20242b; border-radius:4px; padding:12px;">').format(svg_width)
-    # Add mora characters
-    chars = ''
-    for pos, mor in enumerate(mora):
-        x_center = margin_lr + (pos * step_width)
-        chars += text(x_center-11, mor)
-    # Add circles and connecting paths
-    circles = ''
-    paths = ''
-    prev_center = (None, None)
-    for pos, accent in enumerate(patt):
-        x_center = margin_lr + (pos * step_width)
-        if accent in ['H', 'h', '1', '2']:
-            y_center = 5  # High position (match example.py)
-        elif accent in ['L', 'l', '0']:
-            y_center = 30  # Low position (match example.py)
-        else:
-            y_center = 30
-        circles += circle(x_center, y_center, pos >= len(mora))
-        if pos > 0:
-            if prev_center[1] == y_center:
-                path_typ = 's'  # straight line
-            elif prev_center[1] < y_center:
-                path_typ = 'd'  # downward line
-            elif prev_center[1] > y_center:
-                path_typ = 'u'  # upward line
-            paths += path(prev_center[0], prev_center[1], path_typ, step_width)
-        prev_center = (x_center, y_center)
-    # Build the SVG in the right order
-    svg += chars  # Text on bottom
-    svg += paths  # Connecting lines in middle
-    svg += circles  # Circles on top
-    svg += '</svg>'
-    return svg
-
-def create_html_pitch_pattern(reading, pattern):
-    svg = create_svg_pitch_pattern(reading, pattern)
-    return f'<div>{svg}</div>'
+# Legacy SVG pitch accent functions removed. All SVG logic is now in pitch_svg.py.
 
 # --- Context Menu Integration ---
 def on_context_menu(webview, menu):
