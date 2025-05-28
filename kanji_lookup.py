@@ -293,12 +293,14 @@ class PitchAccentSvgWidget(QWidget):
             kana = p.get('kana')
             pattern = p.get('pattern')
             if kana and pattern:
-                formatted_pattern = format_pitch_pattern(pattern)
-                svg = create_svg_pitch_pattern(kana, formatted_pattern)
-                renderer = QSvgRenderer(bytearray(svg, encoding='utf-8'))
-                self.svg_renderers.append(renderer)
-                size = renderer.defaultSize()
-                self.sizes.append(size)
+                patterns = [pat.strip() for pat in str(pattern).split(',')]
+                for pat in patterns:
+                    formatted_pattern = format_pitch_pattern(pat)
+                    svg = create_svg_pitch_pattern(kana, formatted_pattern)
+                    renderer = QSvgRenderer(bytearray(svg, encoding='utf-8'))
+                    self.svg_renderers.append(renderer)
+                    size = renderer.defaultSize()
+                    self.sizes.append(size)
         self.scroll_offset = 0  # reset scroll on update
         self.updateGeometry()
         self.update()

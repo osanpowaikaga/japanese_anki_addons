@@ -353,10 +353,15 @@ def create_japanese_word_card(word, deck_id=None, preview_only=False):
         except Exception:
             pass
         for entry in entries:
-            formatted_pattern = format_pitch_pattern(entry['pattern'])
-            # Use shared SVG logic from pitch_svg.py
-            svg = create_html_pitch_pattern(entry['kana'], formatted_pattern)
-            pitch_html += f'<div class="pitch-accent-block">{svg}</div>'
+            clean_kana = strip_pitch_marks(entry['kana'])
+            # Split on commas and render all patterns
+            for patt in str(entry['pattern']).split(','):
+                patt = patt.strip()
+                if not patt:
+                    continue
+                formatted_pattern = format_pitch_pattern(patt)
+                svg = create_html_pitch_pattern(clean_kana, formatted_pattern)
+                pitch_html += f'<div class="pitch-accent-block">{svg}</div>'
     # Kanji info
     kanji_blocks = get_kanji_info_blocks(word)
     kanji_info_str = ''
@@ -424,6 +429,10 @@ def format_pitch_pattern(pattern):
         else:
             result += char
     return result if result else pattern
+
+def strip_pitch_marks(kana):
+    # Remove common pitch accent marks (＼, ／, ˉ, ˊ, ˋ, ˘, ˙, etc.)
+    return re.sub(r'[＼／ˉˊˋ˘˙]', '', kana)
 
 # --- Pitch Accent SVG Generation ---
 # Legacy SVG pitch accent functions removed. All SVG logic is now in pitch_svg.py.
