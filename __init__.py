@@ -441,6 +441,10 @@ def strip_pitch_marks(kana):
 def on_context_menu(webview, menu):
     selected = webview.selectedText()
     if selected and any(ord(c) > 0x3000 for c in selected):
+        # Check if the action already exists in the menu
+        for action in menu.actions():
+            if action.text() == 'Create Japanese Word Card':
+                return  # Already present, do not add again
         act = QAction('Create Japanese Word Card', menu)
         def handler():
             dlg = JapaneseWordCardCreator(mw)
