@@ -16,6 +16,7 @@ import unicodedata
 import sqlite3
 from .kanji_lookup import KanjiLookupDialog
 from . import update_pitch_accents
+# from . import update_related_words_by_frequency
 from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
 # Add-on paths
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
