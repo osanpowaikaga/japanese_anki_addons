@@ -19,9 +19,13 @@ from . import update_pitch_accents
 from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
 # Add-on paths
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
-JM_DICT_PATH = os.path.join(ADDON_DIR, 'JMdict_e_examp.XML')
-PITCH_DB_PATH = os.path.join(ADDON_DIR, 'wadoku_pitchdb.csv')
-KANJI_INFO_PATH = os.path.join(ADDON_DIR, '常用漢字の書き取り.json')
+DATA_DIR = os.path.join(ADDON_DIR, 'data')
+JM_DICT_PATH = os.path.join(DATA_DIR, 'JMdict_e_examp.XML')
+PITCH_DB_PATH = os.path.join(DATA_DIR, 'wadoku_pitchdb.csv')
+KANJI_INFO_PATH = os.path.join(DATA_DIR, '常用漢字の書き取り.json')
+PITCH_DB_SQLITE_PATH = os.path.join(DATA_DIR, 'wadoku_pitchdb.sqlite')
+JMDICT_JSON_PATH = os.path.join(DATA_DIR, 'JMdict_e_examp.json')
+JMDICT_SQLITE_PATH = os.path.join(DATA_DIR, 'JMdict_e_examp.sqlite')
 
 # --- Load Kanji Info JSON ---
 try:
@@ -29,9 +33,6 @@ try:
         KANJI_INFO_DB = json.load(f)
 except Exception:
     KANJI_INFO_DB = []
-
-# --- Pitch Accent SQLite Database Path ---
-PITCH_DB_SQLITE_PATH = os.path.join(ADDON_DIR, 'wadoku_pitchdb.sqlite')
 
 # --- Convert CSV to SQLite if needed ---
 def ensure_pitchdb_sqlite():
@@ -120,12 +121,6 @@ def lookup_pitch_accent(word):
         result = (accented_kanas, accented_kanas[0] if accented_kanas else '', pitch_patterns, normal_kanas[0] if normal_kanas else '')
     _pitch_accent_cache[word] = result
     return result
-
-# --- JMdict JSON Database Path ---
-JMDICT_JSON_PATH = os.path.join(ADDON_DIR, 'JMdict_e_examp.json')
-
-# --- JMdict SQLite Database Path ---
-JMDICT_SQLITE_PATH = os.path.join(ADDON_DIR, 'JMdict_e_examp.sqlite')
 
 # --- SQLite-based JMdict Lookup ---
 def ensure_jmdict_sqlite():

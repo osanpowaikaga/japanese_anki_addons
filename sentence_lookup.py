@@ -4,10 +4,11 @@ from urllib.parse import urljoin
 import json
 import os
 
+DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 GOO_BASE_URL = "https://dictionary.goo.ne.jp"
 GOO_SEARCH_URL = "https://dictionary.goo.ne.jp/en/"
 GOO_SEARCH_ACTION = "/freewordsearcher.html"
-KANJI_EXAMPLES_PATH = os.path.join(os.path.dirname(__file__), 'kanji_examples.json')
+KANJI_EXAMPLES_PATH = os.path.join(DATA_DIR, 'kanji_examples.json')
 
 
 def load_kanji_examples():

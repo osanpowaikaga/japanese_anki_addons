@@ -17,8 +17,9 @@ from .pitch_svg import pattern_to_mora_pitch, text, circle, path
 
 # --- Helper: JMdict XML lookup ---
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
-JM_DICT_XML = os.path.join(ADDON_DIR, 'JMdict_e_examp.XML')
-WADOKU_CSV = os.path.join(ADDON_DIR, 'wadoku_pitchdb.csv')
+DATA_DIR = os.path.join(ADDON_DIR, 'data')
+JM_DICT_XML = os.path.join(DATA_DIR, 'JMdict_e_examp.XML')
+WADOKU_CSV = os.path.join(DATA_DIR, 'wadoku_pitchdb.csv')
 SENTENCE_LOOKUP_PATH = os.path.join(ADDON_DIR, 'sentence_lookup.py')
 
 # --- Load sentence_lookup.py dynamically ---
@@ -35,10 +36,10 @@ else:
         return [], []
 
 # --- JSON/SQLite DB paths ---
-JMDICT_JSON_PATH = os.path.join(ADDON_DIR, 'JMdict_e_examp.json')
-JMDICT_SQLITE_PATH = os.path.join(ADDON_DIR, 'JMdict_e_examp.sqlite')
-WADOKU_JSON_PATH = os.path.join(ADDON_DIR, 'wadoku_pitchdb.json')
-KANJI_INFO_PATH = os.path.join(ADDON_DIR, '常用漢字の書き取り.json')
+JMDICT_JSON_PATH = os.path.join(DATA_DIR, 'JMdict_e_examp.json')
+JMDICT_SQLITE_PATH = os.path.join(DATA_DIR, 'JMdict_e_examp.sqlite')
+WADOKU_JSON_PATH = os.path.join(DATA_DIR, 'wadoku_pitchdb.json')
+KANJI_INFO_PATH = os.path.join(DATA_DIR, '常用漢字の書き取り.json')
 
 # --- Kanji Info JSON ---
 try:
@@ -162,7 +163,7 @@ def lookup_jmdict(word):
     return _JMDICT_JSON_CACHE.get(word, [])
 
 # --- Wadoku Pitch Accent SQLite DB Path ---
-WADOKU_SQLITE_PATH = os.path.join(ADDON_DIR, 'wadoku_pitchdb.sqlite')
+WADOKU_SQLITE_PATH = os.path.join(DATA_DIR, 'wadoku_pitchdb.sqlite')
 
 def ensure_wadoku_sqlite():
     """Convert wadoku_pitchdb.csv to SQLite if not present."""

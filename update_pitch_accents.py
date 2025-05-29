@@ -4,6 +4,12 @@ from aqt.utils import showInfo
 from anki.notes import Note
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QProgressBar
 from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
+import os
+import sys
+import sqlite3
+
+ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(ADDON_DIR, 'data')
 
 class PitchAccentDeckFieldSelector(QDialog):
     def __init__(self, parent=None):
@@ -78,7 +84,6 @@ class PitchAccentDeckFieldSelector(QDialog):
         nids = mw.col.db.list("select nid from cards where did=?", deck_id)
         total = len(set(nids))
         updated = 0
-        import sys
         addon_init = sys.modules.get('japanese_word_creator')
         if not addon_init or not hasattr(addon_init, "lookup_pitch_accent"):
             showInfo("Could not import pitch accent functions from __init__.py. Aborting.")
@@ -94,7 +99,6 @@ class PitchAccentDeckFieldSelector(QDialog):
                 # Use the same DB path as in __init__.py
                 PITCH_DB_SQLITE_PATH = addon_init.PITCH_DB_SQLITE_PATH
                 addon_init.ensure_pitchdb_sqlite()
-                import sqlite3, os
                 try:
                     if os.path.exists(PITCH_DB_SQLITE_PATH):
                         conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
@@ -123,6 +127,9 @@ class PitchAccentDeckFieldSelector(QDialog):
         mw.col.reset()
         showInfo(f"Updated {updated} notes in deck '{deck_name}'.")
         super().accept()
+
+# In get_reading_frequencies and any other place, update the path:
+freq_db_path = os.path.join(DATA_DIR, 'japanese_word_frequencies.sqlite')
 
 # Add menu entry to Tools menu
 _menu_entry_added_pitch = False
