@@ -1,6 +1,6 @@
 .anki {
-  max-width: 500px;
-  min-width: 500px;
+  max-width: 550px;
+  min-width: 550px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -110,13 +110,11 @@
 .外{color:#686868;}
 
 .word-translation {
-  margin-bottom: 2px;
-  line-height: 1.3;
-  font-size: 0.62em;
+  line-height: 1.2;
+  font-size: 0.5em;
   display: block;
   text-align: left;
 	  margin-bottom: 15px;
-
 }
 
 
