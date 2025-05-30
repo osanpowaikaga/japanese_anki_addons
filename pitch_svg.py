@@ -1,7 +1,18 @@
 # pitch_svg.py
 # Shared pitch accent SVG generation utilities for Japanese add-ons
+import re
+
+def normalize_hira(hira):
+    """
+    Remove all characters except hiragana and small kana combiners.
+    This strips markup, punctuation, and non-hiragana symbols.
+    """
+    # Allow hiragana, small kana, and long vowel mark (ー)
+    return ''.join(c for c in hira if re.match(r'[ぁ-ゖー]', c))
+
 
 def hira_to_mora(hira):
+    hira = normalize_hira(hira)
     mora_arr = []
     combiners = ['ゃ', 'ゅ', 'ょ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ',
                  'ャ', 'ュ', 'ョ', 'ァ', 'ィ', 'ゥ', 'ェ', 'ォ']
@@ -18,8 +29,7 @@ def hira_to_mora(hira):
 def pattern_to_mora_pitch(pattern, mora_list):
     """
     Map a pitch pattern string to mora units and post-mora.
-    If the pattern is longer than mora+1, group pattern chars so that each mora gets a group,
-    and the last char is the post-mora pitch.
+    Handles digraphs (e.g., Ll for りょ) by matching mora length to pattern length - 1.
     """
     if not pattern or not mora_list:
         return []
@@ -27,17 +37,23 @@ def pattern_to_mora_pitch(pattern, mora_list):
     # If pattern length == n_mora+1, just use as is
     if len(pattern) == n_mora + 1:
         return list(pattern)
-    # If pattern is longer, group pattern chars for each mora, last char is post-mora
+    # Otherwise, try to group pattern chars to match mora count
     groups = []
-    chars_left = len(pattern) - 1  # exclude post-mora
-    base = chars_left // n_mora
-    extra = chars_left % n_mora
     idx = 0
-    for i in range(n_mora):
-        group_len = base + (1 if i < extra else 0)
-        groups.append(pattern[idx:idx+group_len])
-        idx += group_len
-    groups.append(pattern[-1])  # post-mora
+    for mora in mora_list:
+        # If there are at least 2 pattern chars left and the next two are an upper-lower pair (e.g., Ll, Hl, etc.), treat as a digraph
+        if idx + 1 < len(pattern) - 1 and pattern[idx].isalpha() and pattern[idx+1].islower() and pattern[idx].isupper():
+            groups.append(pattern[idx] + pattern[idx+1])
+            idx += 2
+        # Special case: Wadoku uses 'Ll' for digraphs, but sometimes just 'L' or 'H' for single kana
+        elif idx + 1 < len(pattern) - 1 and pattern[idx:idx+2] in ['Ll', 'Hl', 'Hl', 'Ll', 'lh', 'hl']:
+            groups.append(pattern[idx:idx+2])
+            idx += 2
+        else:
+            groups.append(pattern[idx])
+            idx += 1
+    # Post-mora
+    groups.append(pattern[-1])
     return groups
 
 def circle(x, y, o=False):

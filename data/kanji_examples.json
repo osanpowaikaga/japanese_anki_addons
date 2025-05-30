@@ -2856,5 +2856,158 @@
       ]
     ],
     "related_words": []
+  },
+  "宮廷": {
+    "examples": [],
+    "related_words": [
+      [
+        "宮廷文学",
+        "court literature"
+      ]
+    ]
+  },
+  "市": {
+    "examples": [
+      [
+        "蚤のみの［青空/朝］市",
+        "「a flea [an open-air/a morning] market"
+      ],
+      [
+        "作物を市へだす",
+        "take [bring] crops to market"
+      ],
+      [
+        "国際見本市",
+        "an international trade fair"
+      ],
+      [
+        "古本市で掘り出し物をした",
+        "I made a great find at the secondhand book fair."
+      ],
+      [
+        "市の立つ日［町］",
+        "a market day [town]"
+      ],
+      [
+        "この通りは毎週一度市が立つ",
+        "A fair is held on [《英》 in] this street once a week."
+      ],
+      [
+        "この易者の評判は大したもので彼の家は常に門前市を成すありさまだ",
+        "Because of his great renown, there is always a line of visitors before this fortune-teller's door [gate]."
+      ],
+      [
+        "長野市",
+        "the city of Nagano／Nagano City"
+      ]
+    ],
+    "related_words": [
+      [
+        "市議会",
+        "⇒"
+      ],
+      [
+        "市債",
+        "a municipal bond"
+      ],
+      [
+        "市葬",
+        "a municipal funeral"
+      ],
+      [
+        "市役所",
+        "⇒"
+      ]
+    ]
+  },
+  "息子": {
+    "examples": [
+      [
+        "うちの跡取り息子",
+        "my son and heir"
+      ],
+      [
+        "どら息子",
+        "a profligate son（▼放蕩息子）"
+      ],
+      [
+        "彼の一人息子",
+        "his only son"
+      ]
+    ],
+    "related_words": []
+  },
+  "雷鳴": {
+    "examples": [
+      [
+        "ものすごい雷鳴が聞こえた",
+        "I heard a loud crash [clap] of thunder."
+      ],
+      [
+        "昨晩は雷鳴がとどろいた",
+        "It thundered last night."
+      ]
+    ],
+    "related_words": []
+  },
+  "完了": {
+    "examples": [
+      [
+        "式典の準備は完了した",
+        "The preparations for the ceremony are complete."
+      ],
+      [
+        "建築工事は明日完了の予定である",
+        "The construction work is to be completed [finished] tomorrow."
+      ],
+      [
+        "旅行の支度は完了しましたか",
+        "Have you finished all the preparations for your trip?"
+      ],
+      [
+        "現在［過去/未来］完了時制",
+        "the present [past/future] perfect tense"
+      ]
+    ],
+    "related_words": [
+      [
+        "完了時制",
+        "〔文法で〕a perfect tense"
+      ]
+    ]
+  },
+  "区画": {
+    "examples": [
+      [
+        "行政区画上この家の半分は隣の区に入っている",
+        "In terms of administrative division, half of this house is in the neighboring ward."
+      ],
+      [
+        "その土地は遊び場に区画されている",
+        "The lot is marked off as a playground."
+      ],
+      [
+        "この土地は区画整理の対象になっている",
+        "This lot will be affected by rezoning."
+      ],
+      [
+        "この市はよく区画整理ができている",
+        "This city has been rezoned effectively."
+      ],
+      [
+        "工場街と住宅街を分ける区画整理が行われる",
+        "This area will be rezoned to separate the industrial and the residential areas."
+      ]
+    ],
+    "related_words": [
+      [
+        "区画整理",
+        "rezoning; land readjustment"
+      ],
+      [
+        "区画整理区画整理する",
+        "する readjust the division of land; readjust boundaries"
+      ]
+    ]
   }
 }
