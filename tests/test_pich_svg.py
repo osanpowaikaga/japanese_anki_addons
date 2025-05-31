@@ -1,15 +1,16 @@
-# test_pitch_svg_for_genshiryoku.py
+# test_pitch_svg.py
 # Standalone test for pitch accent SVG generation for 原子力
 
 import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import re
 import json
 import sqlite3
 from pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
 
 # --- Minimal lookup_pitch_accent (copied from __init__.py, no relative imports) ---
-ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
+ADDON_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(ADDON_DIR, 'data')
 PITCH_DB_SQLITE_PATH = os.path.join(DATA_DIR, 'wadoku_pitchdb.sqlite')
 
