@@ -143,3 +143,21 @@ def create_svg_pitch_pattern(word, patt):
 def create_html_pitch_pattern(reading, pattern):
     svg = create_svg_pitch_pattern(reading, pattern)
     return f'<div>{svg}</div>'
+
+def extract_unique_pitch_patterns(entries):
+    """
+    Given a list of DB entries (each with 'kana' and 'pattern'),
+    return a list of unique (kana, pattern) pairs, splitting comma-separated patterns and deduplicating.
+    Order is preserved by first occurrence.
+    """
+    seen = set()
+    result = []
+    for entry in entries:
+        kana = entry.get('kana')
+        patterns = entry.get('pattern', '')
+        for patt in [p.strip() for p in patterns.split(',') if p.strip()]:
+            key = (kana, patt)
+            if key not in seen:
+                seen.add(key)
+                result.append({'kana': kana, 'pattern': patt})
+    return result

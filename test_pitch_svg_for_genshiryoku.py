@@ -51,7 +51,7 @@ def lookup_pitch_accent(word):
 
 # --- Test logic ---
 def test_pitch_svg_for_genshiryoku():
-    word = '原子力'
+    word = '盆'
     print(f"Word: {word}")
 
     # 1. Lookup pitch accent data

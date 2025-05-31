@@ -13,7 +13,7 @@ import sqlite3
 import re
 from aqt import gui_hooks, mw
 from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
-from .pitch_svg import pattern_to_mora_pitch, text, circle, path
+from .pitch_svg import pattern_to_mora_pitch, text, circle, path, extract_unique_pitch_patterns
 
 # --- Helper: JMdict XML lookup ---
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -290,18 +290,14 @@ class PitchAccentSvgWidget(QWidget):
         self.sizes = []
         # Always use the shared SVG logic and pattern formatting
         from .__init__ import format_pitch_pattern
-        for p in self.pitch_entries:
-            kana = p.get('kana')
-            pattern = p.get('pattern')
-            if kana and pattern:
-                patterns = [pat.strip() for pat in str(pattern).split(',')]
-                for pat in patterns:
-                    formatted_pattern = format_pitch_pattern(pat)
-                    svg = create_svg_pitch_pattern(kana, formatted_pattern)
-                    renderer = QSvgRenderer(bytearray(svg, encoding='utf-8'))
-                    self.svg_renderers.append(renderer)
-                    size = renderer.defaultSize()
-                    self.sizes.append(size)
+        unique_pitch = extract_unique_pitch_patterns(self.pitch_entries)
+        for entry in unique_pitch:
+            formatted_pattern = format_pitch_pattern(entry['pattern'])
+            svg = create_svg_pitch_pattern(entry['kana'], formatted_pattern)
+            renderer = QSvgRenderer(bytearray(svg, encoding='utf-8'))
+            self.svg_renderers.append(renderer)
+            size = renderer.defaultSize()
+            self.sizes.append(size)
         self.scroll_offset = 0  # reset scroll on update
         self.updateGeometry()
         self.update()

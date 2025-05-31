@@ -18,7 +18,7 @@ from .kanji_lookup import KanjiLookupDialog
 from . import update_pitch_accents
 from . import populate_words_with_translations
 # from . import update_related_words_by_frequency
-from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
+from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern, extract_unique_pitch_patterns
 # Add-on paths
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ADDON_DIR, 'data')
@@ -332,33 +332,23 @@ def create_japanese_word_card(word, deck_id=None, preview_only=False):
     # Pitch accent SVG: use each unique (kana, pattern) pair
     pitch_html = ''
     if jmdict_entries or pitch_patterns:
-        unique_pitch = set()
+        # Use lookup_pitch_accent to get DB entries, then deduplicate
         entries = []
-        ensure_pitchdb_sqlite()
         try:
-            if os.path.exists(PITCH_DB_SQLITE_PATH):
-                import sqlite3
-                conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
-                c = conn.cursor()
-                c.execute('SELECT kana, pattern FROM pitch_accents WHERE kanji=? OR kana=?', (word, word))
-                for row in c.fetchall():
-                    kana, pattern = row
-                    if (kana, pattern) not in unique_pitch:
-                        unique_pitch.add((kana, pattern))
-                        entries.append({'kana': kana, 'pattern': pattern})
-                conn.close()
+            conn = sqlite3.connect(PITCH_DB_SQLITE_PATH)
+            c = conn.cursor()
+            c.execute('SELECT kana, pattern FROM pitch_accents WHERE kanji=? OR kana=?', (word, word))
+            for row in c.fetchall():
+                kana, pattern = row
+                entries.append({'kana': kana, 'pattern': pattern})
+            conn.close()
         except Exception:
             pass
-        for entry in entries:
-            clean_kana = strip_pitch_marks(entry['kana'])
-            # Split on commas and render all patterns
-            for patt in str(entry['pattern']).split(','):
-                patt = patt.strip()
-                if not patt:
-                    continue
-                formatted_pattern = format_pitch_pattern(patt)
-                svg = create_html_pitch_pattern(clean_kana, formatted_pattern)
-                pitch_html += f'<div class="pitch-accent-block">{svg}</div>'
+        unique_pitch = extract_unique_pitch_patterns(entries)
+        for entry in unique_pitch:
+            formatted_pattern = format_pitch_pattern(entry['pattern'])
+            svg = create_html_pitch_pattern(entry['kana'], formatted_pattern)
+            pitch_html += f'<div class="pitch-accent-block">{svg}</div>'
     # Kanji info
     kanji_blocks = get_kanji_info_blocks(word)
     kanji_info_str = ''

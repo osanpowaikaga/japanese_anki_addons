@@ -3,7 +3,7 @@ from aqt import mw
 from aqt.utils import showInfo
 from anki.notes import Note
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QProgressBar
-from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern
+from .pitch_svg import hira_to_mora, create_svg_pitch_pattern, create_html_pitch_pattern, extract_unique_pitch_patterns
 import os
 import sys
 import sqlite3
@@ -94,7 +94,6 @@ class PitchAccentDeckFieldSelector(QDialog):
                 input_value = note[field1]
                 # --- Use the same logic as in __init__.py: fetch all (kana, pattern) pairs from DB ---
                 pitch_html = ''
-                unique_pitch = set()
                 entries = []
                 # Use the same DB path as in __init__.py
                 PITCH_DB_SQLITE_PATH = addon_init.PITCH_DB_SQLITE_PATH
@@ -106,13 +105,13 @@ class PitchAccentDeckFieldSelector(QDialog):
                         c.execute('SELECT kana, pattern FROM pitch_accents WHERE kanji=? OR kana=?', (input_value, input_value))
                         for row in c.fetchall():
                             kana, pattern = row
-                            if (kana, pattern) not in unique_pitch:
-                                unique_pitch.add((kana, pattern))
-                                entries.append({'kana': kana, 'pattern': pattern})
+                            entries.append({'kana': kana, 'pattern': pattern})
                         conn.close()
                 except Exception:
                     pass
-                for entry in entries:
+                # Deduplicate (kana, pattern) pairs before SVG generation
+                unique_pitch = extract_unique_pitch_patterns(entries)
+                for entry in unique_pitch:
                     formatted_pattern = addon_init.format_pitch_pattern(entry['pattern'])
                     svg = create_html_pitch_pattern(entry['kana'], formatted_pattern)
                     pitch_html += f'<div class="pitch-accent-block">{svg}</div>'
