@@ -78,6 +78,10 @@ def main():
         reading = parts[1]
         reading_kata = hiragana_to_katakana(reading)
         kanji_list = [clean_word(k) for k in kanji_column.split('␟') if k]
+        # Filter: if any entry in kanji_list contains a non-kana character, remove all entries that are only kana
+        has_non_kana = any(re.search(r'[^ぁ-ゖァ-ヺー]', w) for w in kanji_list)
+        if has_non_kana:
+            kanji_list = [w for w in kanji_list if re.search(r'[^ぁ-ゖァ-ヺー]', w)]
         if idx < 2:
             print(f"\nLine {idx+1}: {line}")
             print(f"  Search words: {kanji_list} | Reading: {reading} | Katakana: {reading_kata}")
@@ -145,6 +149,38 @@ def main():
     print(f"\nTotal (word, reading) pairs in wadoku: {total_pairs}")
     print(f"Pairs found in frequency DB: {found_pairs}")
     print(f"Coverage: {found_pairs/total_pairs:.4%}")
+
+    # Custom test for two specific lines
+    test_lines = [
+        '△飯␟いい␟飯␞いい␞いい␞1␞HLL',
+        '飯␟飯␟めし␟メシ␞めし␞めし␞2␞LHL'
+    ]
+    print("\n--- Custom Test: Frequency for two specific lines ---")
+    for line in test_lines:
+        parts = line.split('␞')
+        if len(parts) < 2:
+            print(f"Line: {line} | Frequency: 0 (invalid line)")
+            continue
+        kanji_column = parts[0]
+        reading = parts[1]
+        reading_kata = hiragana_to_katakana(reading)
+        kanji_list = [clean_word(k) for k in kanji_column.split('␟') if k]
+        # Apply the same filter as above
+        has_non_kana = any(re.search(r'[^ぁ-ゖァ-ヺー]', w) for w in kanji_list)
+        if has_non_kana:
+            kanji_list = [w for w in kanji_list if re.search(r'[^ぁ-ゖァ-ヺー]', w)]
+        max_freq = 0
+        for word in kanji_list:
+            cursor = sqlite3.connect(FREQ_DB_PATH).execute(
+                'SELECT frequency FROM word_readings WHERE word=? AND reading=?',
+                (word, reading_kata)
+            )
+            row = cursor.fetchone()
+            if row and row[0] is not None:
+                freq = int(row[0])
+                if freq > max_freq:
+                    max_freq = freq
+        print(f"Line: {line}\n  Words: {kanji_list} | Reading: {reading} | Katakana: {reading_kata} | Frequency in DB: {max_freq}")
 
 if __name__ == '__main__':
     main()
