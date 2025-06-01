@@ -116,10 +116,22 @@ def lookup_pitch_accent(word):
     if not entries:
         result = ([], '', [], '')
     else:
-        # Collect all unique accented_kanas readings
-        accented_kanas = list({e["accented_kana"] for e in entries if e["accented_kana"]})
+        # Collect all unique accented_kanas readings in order
+        accented_kanas = []
+        seen = set()
+        for e in entries:
+            ak = e["accented_kana"]
+            if ak and ak not in seen:
+                accented_kanas.append(ak)
+                seen.add(ak)
         pitch_patterns = [e["pattern"] for e in entries]
-        normal_kanas = list({e["kana"] for e in entries if e["kana"]})
+        normal_kanas = []
+        seen_kana = set()
+        for e in entries:
+            kana = e["kana"]
+            if kana and kana not in seen_kana:
+                normal_kanas.append(kana)
+                seen_kana.add(kana)
         result = (accented_kanas, accented_kanas[0] if accented_kanas else '', pitch_patterns, normal_kanas[0] if normal_kanas else '')
     _pitch_accent_cache[word] = result
     return result
