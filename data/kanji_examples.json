@@ -3061,5 +3061,91 @@
   "機長": {
     "examples": [],
     "related_words": []
+  },
+  "飯": {
+    "examples": [
+      [
+        "飯を炊く",
+        "boil [cook] rice"
+      ],
+      [
+        "飯を茶碗によそう",
+        "serve [dish up] rice in a bowl"
+      ],
+      [
+        "飯は何杯食ったか",
+        "How many bowls of rice did you eat?"
+      ],
+      [
+        "飯を食う",
+        "eat／have a meal"
+      ],
+      [
+        "飯の支度はまだか",
+        "Isn't breakfast [lunch/supper] ready yet?"
+      ],
+      [
+        "彼は映画を見るのが三度の飯より好きだ",
+        "He'd rather see movies than eat."
+      ],
+      [
+        "この仕事がなくなったら飯の食い上げだ",
+        "If I lose this job, I will starve."
+      ],
+      [
+        "大道で物を売って飯の種にしている",
+        "He earns his living by selling things on [《英》 in] the street."
+      ],
+      [
+        "絵筆では飯は食えない",
+        "He cannot 「make a living [earn his livelihood/earn his bread] by painting."
+      ],
+      [
+        "家族に飯を食わせるのは容易なことではない",
+        "It is not an easy task to support a family."
+      ]
+    ],
+    "related_words": [
+      [
+        "1",
+        "〔米飯〕boiled rice"
+      ],
+      [
+        "2",
+        "〔食事〕a meal；〔食べ物〕food"
+      ],
+      [
+        "飯の種",
+        "a means of making a living"
+      ],
+      [
+        "飯を食う1",
+        "〔生活する〕"
+      ],
+      [
+        "飯を食う2",
+        "〔「…の」の形で，…に勤める〕"
+      ],
+      [
+        "飯炊き",
+        "〔飯を炊くこと〕cooking rice；〔料理人〕a cook；〔料理人を手伝う人〕a kitchen helper [maid]"
+      ],
+      [
+        "飯茶碗",
+        "a rice bowl"
+      ],
+      [
+        "飯粒",
+        "a grain of cooked rice"
+      ],
+      [
+        "飯時",
+        "((at)) mealtime"
+      ],
+      [
+        "飯屋",
+        "an eating house; a cheap restaurant"
+      ]
+    ]
   }
 }

@@ -471,13 +471,8 @@ class KanjiLookupDialog(QDialog):
                 continue
             seen_final.add(dedup_key)
             unique_entries.append(entry)
-        # --- Sort accented kana readings by frequency ---
+        # --- Return accented kana list ---
         if accented_kana_list:
-            freq_map = get_reading_frequencies(word)
-            def reading_freq(accented):
-                kata = accented_kana_to_katakana(accented)
-                return freq_map.get(kata, 0)
-            accented_kana_list.sort(key=reading_freq, reverse=True)
             readings = ', '.join(accented_kana_list)
         else:
             readings = reading
@@ -829,25 +824,6 @@ def accented_kana_to_katakana(accented_kana):
         else:
             kata += ch
     return kata
-
-def get_reading_frequencies(word):
-    # Returns a dict: {katakana_reading: frequency}
-    freq_db_path = os.path.join(ADDON_DIR, 'japanese_word_frequencies.sqlite')
-    freq_map = {}
-    if not os.path.exists(freq_db_path):
-        return freq_map
-    try:
-        conn = sqlite3.connect(freq_db_path)
-        c = conn.cursor()
-        c.execute('SELECT reading, frequency FROM word_readings WHERE word=?', (word,))
-        for row in c.fetchall():
-            reading = row[0]
-            freq = row[1]
-            freq_map[reading] = freq
-        conn.close()
-    except Exception:
-        pass
-    return freq_map
 
 def create_svg_pitch_pattern(word, patt):
     # If multiple patterns are present, use only the first
