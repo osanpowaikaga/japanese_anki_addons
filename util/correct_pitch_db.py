@@ -12,9 +12,15 @@ def parse_accents_file(filepath):
             if not line or line.startswith('//'):  # skip comments
                 continue
             parts = line.split('\t')
-            if len(parts) < 3:
+            if len(parts) >= 3:
+                word, reading, pitch = parts[:3]
+                if not reading:
+                    reading = word  # If reading is empty, use word as reading
+            elif len(parts) == 2:
+                word, pitch = parts
+                reading = word  # Use word as reading if reading is missing
+            else:
                 continue
-            word, reading, pitch = parts[:3]
             accents[(word, reading)] = pitch
     return accents
 

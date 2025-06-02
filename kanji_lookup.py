@@ -100,7 +100,7 @@ def convert_wadoku_csv_to_json():
                     'pitch_pattern': pitch_pattern
                 })
         with open(WADOKU_JSON_PATH, 'w', encoding='utf-8') as f:
-            json.dump(entries, f, ensure_ascii=False)
+            json.dump(entries, f, ensure_ascii=False, indent=2)
     except Exception:
         pass
 

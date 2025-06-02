@@ -1,6 +1,10 @@
 # pitch_svg.py
 # Shared pitch accent SVG generation utilities for Japanese add-ons
 import re
+try:
+    import jaconv
+except ImportError:
+    jaconv = None
 
 def normalize_hira(hira):
     """
@@ -85,11 +89,19 @@ def path(x, y, typ, step_width):
         '<path d="m {},{} {}" style="fill:none;stroke:#00f;stroke-width:1.5;" />'
     ).format(x, y, delta)
 
+def katakana_to_hiragana(text):
+    if jaconv:
+        return jaconv.kata2hira(text)
+    # Fallback: Unicode offset for katakana block
+    return ''.join(chr(ord(ch) - 0x60) if 'ァ' <= ch <= 'ン' else ch for ch in text)
+
 def create_svg_pitch_pattern(word, patt):
     # If multiple patterns are present, use only the first
     if ',' in str(patt):
         patt = str(patt).split(',')[0].strip()
-    mora = hira_to_mora(word)
+    # Always convert katakana to hiragana for mora splitting
+    hira_word = katakana_to_hiragana(word)
+    mora = hira_to_mora(hira_word)
     pitch_groups = pattern_to_mora_pitch(patt, mora)
     if not pitch_groups or len(pitch_groups) != len(mora) + 1:
         # fallback to old logic
@@ -147,7 +159,8 @@ def create_html_pitch_pattern(reading, pattern):
 def extract_unique_pitch_patterns(entries):
     """
     Given a list of DB entries (each with 'kana' and 'pattern'),
-    return a list of unique (kana, pattern) pairs, splitting comma-separated patterns and deduplicating.
+    return a list of unique (hiragana_kana, pattern) pairs, splitting comma-separated patterns and deduplicating.
+    Katakana readings are converted to hiragana before deduplication, so you only get one SVG per unique (hiragana, pattern) pair.
     Order is preserved by first occurrence.
     """
     seen = set()
@@ -156,8 +169,9 @@ def extract_unique_pitch_patterns(entries):
         kana = entry.get('kana')
         patterns = entry.get('pattern', '')
         for patt in [p.strip() for p in patterns.split(',') if p.strip()]:
-            key = (kana, patt)
+            hira_kana = katakana_to_hiragana(kana)
+            key = (hira_kana, patt)
             if key not in seen:
                 seen.add(key)
-                result.append({'kana': kana, 'pattern': patt})
+                result.append({'kana': hira_kana, 'pattern': patt})
     return result

@@ -52,7 +52,7 @@ def lookup_pitch_accent(word):
 
 # --- Test logic ---
 def test_pitch_svg_for_genshiryoku():
-    word = '外す'
+    word = 'サラダ'
     print(f"Word: {word}")
 
     # 1. Lookup pitch accent data
@@ -63,16 +63,31 @@ def test_pitch_svg_for_genshiryoku():
     print(f"Normal kana: {normal_kana}")
 
     # 2. Use kana for mora splitting
+    # Always use hiragana for mora splitting to avoid empty mora issue
+    # Convert katakana to hiragana if needed
+    import jaconv
+
+    def katakana_to_hiragana(text):
+        # Use jaconv if available, else fallback
+        try:
+            return jaconv.kata2hira(text)
+        except Exception:
+            # Simple fallback: Unicode offset
+            return ''.join(chr(ord(ch) - 0x60) if 'ァ' <= ch <= 'ン' else ch for ch in text)
+
+    # Prefer accented_kana if available, else normal_kana, else word
     kana = accented_kana if accented_kana else (normal_kana if normal_kana else word)
-    mora = hira_to_mora(kana)
+    # Convert to hiragana for mora splitting
+    kana_hira = katakana_to_hiragana(kana)
+    mora = hira_to_mora(kana_hira)
     print(f"Mora: {mora}")
 
     # 3. Generate SVG for each pitch pattern
     for pattern in pitch_patterns:
         print(f"Pattern: {pattern}")
-        svg = create_svg_pitch_pattern(kana, pattern)
+        svg = create_svg_pitch_pattern(kana_hira, pattern)
         print(f"SVG:\n{svg}\n")
-        html = create_html_pitch_pattern(kana, pattern)
+        html = create_html_pitch_pattern(kana_hira, pattern)
         print(f"HTML:\n{html}\n")
 
 if __name__ == "__main__":

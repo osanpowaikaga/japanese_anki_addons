@@ -3527,5 +3527,39 @@
         "Never come here again.／I never want to see you again."
       ]
     ]
+  },
+  "サラダ": {
+    "examples": [
+      [
+        "ハムサラダ",
+        "a ham salad"
+      ],
+      [
+        "季節のサラダ",
+        "a seasonal salad"
+      ]
+    ],
+    "related_words": [
+      [
+        "サラダ油",
+        "salad oil"
+      ],
+      [
+        "サラダドレッシング",
+        "salad dressing"
+      ],
+      [
+        "サラダ菜",
+        "lettuce"
+      ],
+      [
+        "サラダバー",
+        "a salad bar"
+      ],
+      [
+        "サラダボール",
+        "a salad bowl"
+      ]
+    ]
   }
 }
