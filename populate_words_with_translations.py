@@ -11,6 +11,7 @@ import re
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ADDON_DIR, 'data')
 JMDICT_SQLITE_PATH = os.path.join(DATA_DIR, 'JMdict_e_examp.sqlite')
+FREQ_SQLITE_PATH = os.path.join(DATA_DIR, 'japanese_word_frequencies.sqlite')
 
 # --- JMdict lookup (copied from __init__.py) ---
 def lookup_jmdict(word):
@@ -127,29 +128,61 @@ class WordsWithTranslationsDialog(QDialog):
         # Replace all occurrences of the kanji with 〇
         return word.replace(kanji, '〇')
 
-    def get_translations(self, word):
+    def strip_furigana(self, word):
+        # Remove [furigana] from word
+        return re.sub(r"\[.+?\]", "", word)
+
+    def kana_to_katakana(self, text):
+        # Convert hiragana to katakana
+        return text.translate(str.maketrans(
+            'ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔゕゖ',
+            'ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶ'))
+
+    def get_highest_frequency_entry(self, word):
         entries = lookup_jmdict(self.strip_furigana(word))
+        if not entries:
+            return None, None
+        best_entry = None
+        best_reading = None
+        best_freq = -1
+        try:
+            conn = sqlite3.connect(FREQ_SQLITE_PATH)
+            c = conn.cursor()
+            for entry in entries:
+                kanas = entry.get('kanas', [])
+                for kana in kanas:
+                    katakana_kana = self.kana_to_katakana(kana)
+                    c.execute('SELECT frequency FROM word_readings WHERE word=? AND reading=?', (self.strip_furigana(word), katakana_kana))
+                    row = c.fetchone()
+                    freq = row[0] if row else -1
+                    if freq > best_freq:
+                        best_freq = freq
+                        best_entry = entry
+                        best_reading = kana
+            conn.close()
+        except Exception:
+            pass
+        if best_entry:
+            return best_entry, best_reading
+        # fallback: just return first entry/reading
+        entry = entries[0]
+        kanas = entry.get('kanas', [])
+        return entry, kanas[0] if kanas else ''
+
+    def get_first_reading(self, word):
+        entry, reading = self.get_highest_frequency_entry(word)
+        return reading or ''
+
+    def get_translations(self, word):
+        entry, reading = self.get_highest_frequency_entry(word)
         translations = []
-        for entry in entries:
+        if entry:
             for m in entry.get('meanings', []):
                 for part in m.split(';'):
                     part = part.strip()
                     if part:
                         translations.append(part)
         return translations[:3]  # Limit to 3 translations
-
-    def strip_furigana(self, word):
-        # Remove [furigana] from word
-        return re.sub(r"\[.+?\]", "", word)
-
-    def get_first_reading(self, word):
-        # Try to get the first kana reading from JMdict
-        entries = lookup_jmdict(self.strip_furigana(word))
-        for entry in entries:
-            kanas = entry.get('kanas', [])
-            if kanas:
-                return kanas[0]
-        return ''
 
 _menu_entry_added_words_trans = False
 
