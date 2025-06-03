@@ -3561,5 +3561,131 @@
         "a salad bowl"
       ]
     ]
+  },
+  "庫": {
+    "examples": [
+      [
+        "酒蔵",
+        "a wine cellar"
+      ],
+      [
+        "米蔵",
+        "a rice granary／a storehouse for rice"
+      ],
+      [
+        "骨董こっとう品を蔵にしまっている",
+        "He keeps his curios in the treasure house."
+      ],
+      [
+        "今では蔵が建つほどだ",
+        "He has become fabulously rich.／《口》 He is rolling in money [《俗》 dough] now."
+      ],
+      [
+        "藤原家蔵の古文書",
+        "old documents 「belonging to [which are the property of] the Fujiwara family"
+      ],
+      [
+        "個人蔵の",
+        "privately owned"
+      ]
+    ],
+    "related_words": [
+      [
+        "蔵が建つ",
+        "get rich"
+      ],
+      [
+        "蔵払い",
+        "⇒"
+      ],
+      [
+        "蔵主",
+        "the owner of a warehouse"
+      ]
+    ]
+  },
+  "建つ": {
+    "examples": [
+      [
+        "昔は田んぼだった所に巨大な工場が建っている",
+        "A huge plant has been built in what was once a rice paddy."
+      ],
+      [
+        "記念碑は駅前に立った",
+        "The monument was erected in front of the station."
+      ]
+    ],
+    "related_words": []
+  },
+  "蔵主": {
+    "examples": [],
+    "related_words": []
+  },
+  "蔵": {
+    "examples": [
+      [
+        "酒蔵",
+        "a wine cellar"
+      ],
+      [
+        "米蔵",
+        "a rice granary／a storehouse for rice"
+      ],
+      [
+        "骨董こっとう品を蔵にしまっている",
+        "He keeps his curios in the treasure house."
+      ],
+      [
+        "今では蔵が建つほどだ",
+        "He has become fabulously rich.／《口》 He is rolling in money [《俗》 dough] now."
+      ],
+      [
+        "藤原家蔵の古文書",
+        "old documents 「belonging to [which are the property of] the Fujiwara family"
+      ],
+      [
+        "個人蔵の",
+        "privately owned"
+      ]
+    ],
+    "related_words": [
+      [
+        "蔵が建つ",
+        "get rich"
+      ],
+      [
+        "蔵払い",
+        "⇒"
+      ],
+      [
+        "蔵主",
+        "the owner of a warehouse"
+      ]
+    ]
+  },
+  "巨大": {
+    "examples": [],
+    "related_words": [
+      [
+        "巨大科学",
+        "Big Science"
+      ],
+      [
+        "巨大企業",
+        "a giant corporation"
+      ],
+      [
+        "巨大銀行",
+        "a megabank"
+      ],
+      [
+        "巨大地震",
+        "a massive earthquake"
+      ],
+      [
+        "巨大都市",
+        "a megalopolis"
+      ]
+    ]
   }
 }
